@@ -1,86 +1,63 @@
 ---
 layout: cv
-title: Isaac Newtons's CV
+title: Will Hardcastle's Resume
 ---
-# Isaac Newton
-Physicist, Mathematician, Cambridge professor.
-
-<div id="webaddress">
-<a href="isaac@applesdofall.org">isaac@applesdofall.org</a>
-| <a href="http://en.wikipedia.org/wiki/Isaac_Newton">My wikipedia page</a>
-</div>
+# Will Hardcastle
+Student, Mathematician, Data Scientist.
 
 
 ## Currently
 
-Standing on the shoulders of giants
-
-### Specialized in
-
-Laws of motion, gravitation, minting coins, disliking [Robert Hooke](http://en.wikipedia.org/wiki/Robert_Hooke)
+Studying mathematics and data science at BYU-Idaho
 
 
 ### Research interests
 
-Cooling, power series, optics, alchemy, planetary motions, apples.
+Mathematics, differential equations, machine learning
 
 
 ## Education
 
-`1654-1660`
-__The King's School, Grantham.__
+`2019-2021`
+__Weber State University, Ogden, UT.__
 
-`June 1661 - now`
-__Trinity College, Cambridge__
-
-- Sizar
-
-`1667 - death`
-__Trinity College, Cambridge__
-
-- Fellow
+`2024 - now`
+__Brigham Young University - Idaho__
 
 
 
 ## Awards
 
-`2012`
-President, *Royal Society*, London, UK
+`2021`
+Salutatorian, *Fremont High*, Plain City, UT
 
-Associate, *French Academy of Science*, Paris, France
+`2025`
 
+BYU-I Scholarship, Rexburg, ID
 
+Pizaa Hut Foundations Scholarship, Rexburg, ID
 
-## Publications
+## Experience
 
-<!-- A list is also available [online](http://scholar.google.co.uk/citations?user=LTOTl0YAAAAJ) -->
-
-### Journals
-
-`1669`
-Newton Sir I, De analysi per æquationes numero terminorum infinitas. 
-
-`1669`
-Lectiones opticæ.
-
-etc. etc. etc.
-
-### Patents
-
-`2012`
-Infinitesimal calculus for solutions to physics problems, [SMBC](http://www.techdirt.com/articles/20121011/09312820678/if-patents-had-been-around-time-newton.shtml) patent 001
-
+`2024 - Current`
+__BYU-I Data Science Society__, Rexburg, ID
 
 ## Occupation
 
-`1600`
-__Royal Mint__, London
+`2023 - Current`
+__Smith's Food and Drug__, North Ogden, UT
 
-- Warden
-- Minted coins
+- Pharmacy technician
 
-`1600`
-__Lucasian professor of Mathematics__, Cambridge University
+`2024`
+__For the Strength of Youth Conferences__, MA, UT and CA
+
+- Counselor, leading youth groups in activities and learning
+
+`2021 - 2023`
+__Arizona Tempe Mission__, Tempe, AZ
+
+- Pharmacy technician
 
 
 
