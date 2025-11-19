@@ -82,486 +82,6 @@
     "text": "🌟 Above and Beyond 🌟\nAfter reviewing your findings, the watchdog group would like some additional questions answered:\n\nHow are things affected if you include the “made for TV movies” that have been assigned TV ratings in your analysis, but still exclude unrated movies?\nThey would also like to see a separate report that includes only TV shows.\nFor an upcoming community meeting, the group would like to present a simple chart showing “For Kids” and “For Adults” categories. The easiest way to accomplish this would be to create a new column in your data frame that maps each rating to the appropriate “For Kids” or “For Adults” label, then create a new visualization based on that column.\n\n\ndf_tv = df[\"rating\"].value_counts()\ndf_tv = df_tv.drop(labels = [\"NR\",\"UR\"])\nplt.figure(figsize=(12,9))\nax = df_tv.plot.bar()\nax.set_title(\"Movies by Rating\")\nax.set_ylabel(\"Number of Movies\")\nax.set_xlabel(\"Rating\")\n\nText(0.5, 0, 'Rating')\n\n\n\n\n\n\n\n\n\n\ndf2 = pd.read_csv(\"https://raw.githubusercontent.com/byui-cse/cse450-course/master/data/netflix_titles.csv\")\n\ndf2 = df2.query(\"type=='TV Show'\")\ndf2_chart = df2['rating'].value_counts()\nplt.figure(figsize=(12,9))\nax = df2_chart.plot.bar()\nax.set_title(\"TV Shows by Rating\")\nax.set_ylabel(\"Number of Shows\")\nax.set_xlabel(\"Rating\")\n\nText(0.5, 0, 'Rating')"
   },
   {
-    "objectID": "notebooks/Exploration_04.html",
-    "href": "notebooks/Exploration_04.html",
-    "title": "Data Exploration 04",
-    "section": "",
-    "text": "You’re working with a team of botanists to develop a flower classification system.\nYour assignment is to build a k-Nearest Neighbors model to classify flowers based on their petal and sepal sizes."
-  },
-  {
-    "objectID": "notebooks/Exploration_04.html#part-a-import-and-explore-the-data",
-    "href": "notebooks/Exploration_04.html#part-a-import-and-explore-the-data",
-    "title": "Data Exploration 04",
-    "section": "Part A: Import and Explore the data",
-    "text": "Part A: Import and Explore the data\nThe dataset for this exploration is stored at the following url:\nhttps://raw.githubusercontent.com/byui-cse/cse450-course/master/data/iris.csv\n\nInitial Data Analysis\nOnce you’ve loaded the data, it’s a good idea to poke around a little bit to find out what you’re dealing with.\nSome questions you might ask include:\n\nWhat does the data look like?\nWhat kind of data is in each column?\nDo any of the columns have missing values?\n\n\nimport pandas as pd\nimport seaborn as sns\nimport matplotlib.pyplot as plt\ndf = pd.read_csv(\"https://raw.githubusercontent.com/byui-cse/cse450-course/master/data/iris.csv\")\n\n\ndf.head()\n\n\n    \n\n\n\n\n\n\nsepal_length\nsepal_width\npetal_length\npetal_width\nspecies\n\n\n\n\n0\n5.1\n3.5\n1.4\n0.2\nIris-setosa\n\n\n1\n4.9\n3.0\n1.4\n0.2\nIris-setosa\n\n\n2\n4.7\n3.2\n1.3\n0.2\nIris-setosa\n\n\n3\n4.6\n3.1\n1.5\n0.2\nIris-setosa\n\n\n4\n5.0\n3.6\n1.4\n0.2\nIris-setosa\n\n\n\n\n\n    \n\n  \n    \n\n  \n    \n  \n    \n\n  \n\n    \n  \n\n\n    \n      \n\n\n    \n        \n    \n\n      \n\n\n\n      \n    \n\n    \n  \n\n\n\ndf.info()\n\n&lt;class 'pandas.core.frame.DataFrame'&gt;\nRangeIndex: 150 entries, 0 to 149\nData columns (total 5 columns):\n #   Column        Non-Null Count  Dtype  \n---  ------        --------------  -----  \n 0   sepal_length  150 non-null    float64\n 1   sepal_width   150 non-null    float64\n 2   petal_length  150 non-null    float64\n 3   petal_width   150 non-null    float64\n 4   species       150 non-null    object \ndtypes: float64(4), object(1)\nmemory usage: 6.0+ KB"
-  },
-  {
-    "objectID": "notebooks/Exploration_04.html#part-b-visualize-the-data",
-    "href": "notebooks/Exploration_04.html#part-b-visualize-the-data",
-    "title": "Data Exploration 04",
-    "section": "Part B: Visualize the Data",
-    "text": "Part B: Visualize the Data\nUse your preferred visualization library to create a scatterplot showing petal length vs petal width. You should plot each flower species as a different color on the scatter plot.\n\nsns.catplot(data = df, x = \"petal_length\", y = \"petal_width\", hue = \"species\")\nplt.xticks(rotation = 90);"
-  },
-  {
-    "objectID": "notebooks/Exploration_04.html#part-c-prepare-the-data-for-machine-learning",
-    "href": "notebooks/Exploration_04.html#part-c-prepare-the-data-for-machine-learning",
-    "title": "Data Exploration 04",
-    "section": "Part C: Prepare the Data for Machine Learning",
-    "text": "Part C: Prepare the Data for Machine Learning\nData preparation (sometimes called “data wrangling” or “data munging”) is where you’ll usually spend the bulk of your time when working on machine learning problems. Only rarely is data already in the optimal form for a given algorithm.\nOften we have to deal with missing values, normalize the data, and perform both simple and complex feature engineering to get the data into the form we need.\nOnce the data is in the correct form, we can then randomize the data and split it into training and test datasets (and sometimes an additional validation dataset).\n\nMachine Learning Steps\nAlmost universally, regardless of which algorithm or type of task we’re performing, building and evaluating a machine learning model with sklearn follows these steps:\n\nPerform any data preprocessing needed.\nPartition the data into features and targets.\nSplit the data into training and test sets (and sometimes a third validation set).\nCreate a configure whichever sklearn model object we’re using.\nTrain the model using its “fit” method.\nTest the model using its “predict” method.\nUse a model evaluation metric to see how well the model performs.\n\nIf the model isn’t performing well, we will repeat one or more of the above steps (sometimes all of them).\nOnce the model is performing adequately, we’ll deploy it for use as part of some larger system.\nFor now, let’s assume that this dataset is in the form we need, and we’ll skip to step 2, partitioning the data.\n\n\nStep 2. Partition the Data into Features and Targets\nFirst, we’ll create a dataframe called “X” containing the features of the data we want to use to make our predictions. In this case, that will be the sepal_length, sepal_width, petal_length, and petal_width features.\n(The name “X” isn’t special, but uppercase X is the conventional name for our feature dataset, because that’s what statisticians use to refer to a matrix of independent variables)\n\n# Create a new dataframe called X that contians the features we're going\n# to use to make predictions\nX = df[[\"sepal_length\",\"sepal_width\",\"petal_length\",\"sepal_width\"]]\n\nNext we’ll create a dataframe called “y” containing the target variable, or the set of values we want to predict. In this case, that will be species.\n(Once again, the name “y” isn’t special, but lowercase y is the conventional name for a list of targets, because that’s what statisticians use to refer to a vector of dependent variables)\n\n# Create a new dataframe called y that contians the target we're\n# trying to predict\ny = df[\"species\"]\n\n\n\nStep 3. Split the data into training and test sets.\nNow that we have our data divided into features (X) and target values (y), we’ll split each of these into a training set and a test set.\nWe’ll use the training sets to “train” our model how to make predictions.\nWe’ll then use our test sets to test how well our model has learned from the training data.\nWhile we could use a bunch of python code to do this step, the sklearn library has lots of built-in functions to handle common data manipulations related to machine learning.\nFor this step, we’ll use the train_test_split() function.\n\n# Import and use the train_test_split() function to split the X and y\n# dataframes into training and test sets.\nfrom sklearn.model_selection import train_test_split\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, train_size = 0.8)\n# The training data should contain 80% of the samples and\n# the test data should contain 20% of the samples.\n\nAfter creating the training and test splits, output the head() of each one and notice how they row numbers have been randomized.\nAlso notice that X_train and y_train’s row numbers match up, as do X_test and y_test’s row numbers.\n\nX_test.head()\n\n\n    \n\n\n\n\n\n\nsepal_length\nsepal_width\npetal_length\nsepal_width\n\n\n\n\n58\n6.6\n2.9\n4.6\n2.9\n\n\n89\n5.5\n2.5\n4.0\n2.5\n\n\n54\n6.5\n2.8\n4.6\n2.8\n\n\n10\n5.4\n3.7\n1.5\n3.7\n\n\n125\n7.2\n3.2\n6.0\n3.2\n\n\n\n\n\n    \n\n  \n    \n\n  \n    \n  \n    \n\n  \n\n    \n  \n\n\n    \n      \n\n\n    \n        \n    \n\n      \n\n\n\n      \n    \n\n    \n  \n\n\n\ny_test.head()\n\n\n\n\n\n\n\n\nspecies\n\n\n\n\n58\nIris-versicolor\n\n\n89\nIris-versicolor\n\n\n54\nIris-versicolor\n\n\n10\nIris-setosa\n\n\n125\nIris-virginica\n\n\n\n\ndtype: object"
-  },
-  {
-    "objectID": "notebooks/Exploration_04.html#part-d-create-and-train-a-model",
-    "href": "notebooks/Exploration_04.html#part-d-create-and-train-a-model",
-    "title": "Data Exploration 04",
-    "section": "Part D: Create and Train a Model",
-    "text": "Part D: Create and Train a Model\nWe’re going to create a model based on the k-Nearest Neighbors algorithm.\nSince this is a classification task, (we’re trying to classify which species a given flower belongs to), we’ll use sklearn’s KNeighborsClassifer.\n\nStep 4. Create and configure the model\nWe start by importing the information about the model we want to create. In python, this information is called a class.\nThe KNeighborsClassifier class contains all of the information python needs to create a kNN Classifier.\nOnce we’ve imported the class, we’ll create an instance of the class using this syntax:\nwhatever = ClassName( parameter_one = value, parameter_two = something_else, etc...)\nIn our case, the class name is KNeighborsClassifer. It doesn’t matter what we call the variable that holds the instance, but one popular convention is to call classifier instances clf, so that’s what you’ll see in the sklearn documentation.\nThe only parameter we want to configure is the n_neighbors parameter, which controls the value of k in the kNN algorithm.\n\n# Import the KNeighborsClassifier class from sklearn\n# Note that it's in the neighbors submodule. See the example code in the\n# documentation for details on how to import it\nfrom sklearn.neighbors import KNeighborsClassifier\n\n\n# Create an instance of the model, configuring it to use the 3 nearest neighbors\n# store the instance in a variable\nclf = KNeighborsClassifier(n_neighbors=3)\n\n\n\nStep 5: Train the model\nNext we’ll train the model. We do this by providing it with the training data we split off from the dataset in step 3.\nThe model “learns” how to associate the feature values (X) with the targets (y). The exact process it uses to learn how to do this depends on which algorithm we’re using.\nSometimes, this is called “fitting the data to the model”, so in sklearn, we perform this step using the fit() method.\n\n# Call the \"fit\" method of the classifier instance we created in step 4.\n# Pass it the X_train and y_train data so that it can learn to make predictions\nclf.fit(X_train, y_train)\n\nKNeighborsClassifier(n_neighbors=3)In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.KNeighborsClassifier?Documentation for KNeighborsClassifieriFittedKNeighborsClassifier(n_neighbors=3)"
-  },
-  {
-    "objectID": "notebooks/Exploration_04.html#part-e-make-predictions-and-evaluate-the-model",
-    "href": "notebooks/Exploration_04.html#part-e-make-predictions-and-evaluate-the-model",
-    "title": "Data Exploration 04",
-    "section": "Part E: Make Predictions and Evaluate the Model",
-    "text": "Part E: Make Predictions and Evaluate the Model\nNow that the model has been created and trained, we can use it to make predictions. Since this is a classification model, when we give it a set of features, it tells us what the most likely target value is.\nIn this case, we tell the model “here are the values for petal width, petal length, sepal width, and sepal length for a particular flower” The model then tells us which species is the most likely for that flower.\nWhen testing how well our model works, we’ll use the test data we split off earlier. It contains the measurements for several flowers, along with their species.\n\nStep 6: Make Predictions on Test Data\nWe’ll give the measurements of each flower to the model and have it predict their species. We’ll then compare those predictions to the known values to determine how accurate our model is.\nSince this is a classification model, there are two different methods we can use to make predictions:\n\npredict(), which returns the most likely prediction for each sample.\npredict_proba() which returns a list of probabilities for each sample. The probabilities tell us how confident the model is that the corresponding sample belongs to a particular class.\n\n\n# Use the predict() method to get a list of predictions for the samples in our\n# test data. Then output those predictions\nclf.predict(X_test)\n\narray(['Iris-versicolor', 'Iris-versicolor', 'Iris-virginica',\n       'Iris-setosa', 'Iris-virginica', 'Iris-versicolor',\n       'Iris-versicolor', 'Iris-setosa', 'Iris-virginica',\n       'Iris-virginica', 'Iris-setosa', 'Iris-virginica',\n       'Iris-versicolor', 'Iris-versicolor', 'Iris-virginica',\n       'Iris-virginica', 'Iris-setosa', 'Iris-setosa', 'Iris-versicolor',\n       'Iris-versicolor', 'Iris-versicolor', 'Iris-virginica',\n       'Iris-versicolor', 'Iris-setosa', 'Iris-setosa', 'Iris-versicolor',\n       'Iris-setosa', 'Iris-setosa', 'Iris-versicolor', 'Iris-setosa'],\n      dtype=object)\n\n\n\n# Just a quick comparison with y_test to see if they match up\ny_test\n\n\n\n\n\n\n\n\nspecies\n\n\n\n\n58\nIris-versicolor\n\n\n89\nIris-versicolor\n\n\n54\nIris-versicolor\n\n\n10\nIris-setosa\n\n\n125\nIris-virginica\n\n\n56\nIris-versicolor\n\n\n92\nIris-versicolor\n\n\n7\nIris-setosa\n\n\n112\nIris-virginica\n\n\n142\nIris-virginica\n\n\n47\nIris-setosa\n\n\n115\nIris-virginica\n\n\n50\nIris-versicolor\n\n\n85\nIris-versicolor\n\n\n121\nIris-virginica\n\n\n140\nIris-virginica\n\n\n14\nIris-setosa\n\n\n27\nIris-setosa\n\n\n61\nIris-versicolor\n\n\n66\nIris-versicolor\n\n\n75\nIris-versicolor\n\n\n77\nIris-versicolor\n\n\n74\nIris-versicolor\n\n\n36\nIris-setosa\n\n\n33\nIris-setosa\n\n\n81\nIris-versicolor\n\n\n42\nIris-setosa\n\n\n20\nIris-setosa\n\n\n60\nIris-versicolor\n\n\n45\nIris-setosa\n\n\n\n\ndtype: object\n\n\n\n\nStep 7: Evaluate the Model\nThere are several metrics we can use to determine how well our model is performing.\nMost of them are in the sklearn.metrics library.\nMost of the sklearn metric function work using the same pattern. We import the function, then give it a list of the true values for our test data, and a list of the values the model predicted for our test data. The metric then outputs the value. How we interpret that value will depend on the exact problem we’re solving, the qualities of our data, and the particular metric we’re using.\n\nAccuracy\nSince this is a multiclass classification problem (“multiclass” means we have more than two options we’re choosing from), we can get a quick estimate from the accuracy_score() function, which tells us the percent of correct predictions made by the model.\n\n# Import the accuracy_score function and use it to determine\n# how accurate the models predictions were for our test data\nfrom sklearn.metrics import accuracy_score\naccuracy_score(y_test, clf.predict(X_test))\n\n0.9333333333333333\n\n\n\n\nConfusion Matrix\nWhile the accuracy score tells us a little about the model’s performance, it doesn’t tell us much.\nFor example, we know how often the model was correct, but we don’t know when it was wrong or why.\nWe can get this information from the confusion_matrix function.\n\n# Import the confusion_matrix function and use it to generate a confusion\n# matrix of our model results.\nfrom sklearn.metrics import confusion_matrix\nconfusion_matrix(y_test, clf.predict(X_test))\n\narray([[10,  0,  0],\n       [ 0, 12,  2],\n       [ 0,  0,  6]])\n\n\n\n\nConfusion Matrix Plot\nIt’s easier to see the results of the confusion matrix if we plot the results. One way to do this is with Seaborn’s heatmap function.\nThis function works a little bit differently than the others. It takes as parameters your model instance, and then options for making the chart display the way you want, and outputs a confusion matrix showing how well the model did in predicting the target values.\nYou’ll notice that in many cases (including this one), the numbers in the confusion matrix will be the same as the results you see from the confusion_matrix() function above, but the plot makes it easier to interpret the results.\nWhen using the confusion matrix, you may find that the default color mapping is difficult to read. The “Blues” mapping is a popular choice.\n\n# Create a Seaborn heatmap\nma = confusion_matrix(y_test, clf.predict(X_test))\nsns.heatmap(data = ma, cmap = \"Blues\")"
-  },
-  {
-    "objectID": "notebooks/Exploration_04.html#above-and-beyond",
-    "href": "notebooks/Exploration_04.html#above-and-beyond",
-    "title": "Data Exploration 04",
-    "section": "🌟 Above and Beyond 🌟",
-    "text": "🌟 Above and Beyond 🌟\nOnce you’ve complted the basics, try to complete one or more of the following tasks:\n\nSee if you can get better results from your model through some data preprocessing, such as normalization.\nOften, using too many features can give poor results. Can you get better performance using a subset of the features instead of all four?\nAre there other ways you could visualize your model results?\n\n\ndf_sub = df.drop(\"petal_length\", axis = 1)\n\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, train_size = 0.8)\nclf_sub=KNeighborsClassifier(n_neighbors=3)\nclf_sub.fit(X_train, y_train)\n\nKNeighborsClassifier(n_neighbors=3)In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.KNeighborsClassifier?Documentation for KNeighborsClassifieriFittedKNeighborsClassifier(n_neighbors=3) \n\n\n\naccuracy_score(y_test, clf.predict(X_test))\nconfusion_matrix(y_test, clf.predict(X_test))\n\narray([[ 9,  0,  0],\n       [ 0, 10,  0],\n       [ 0,  0, 11]])\n\n\n\nma = confusion_matrix(y_test, clf.predict(X_test))\nsns.heatmap(data = ma, cmap = \"Blues\")"
-  },
-  {
-    "objectID": "Cleansing_Exploration/project1.html",
-    "href": "Cleansing_Exploration/project1.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "Cleansing_Exploration/project2.html",
-    "href": "Cleansing_Exploration/project2.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "full_stack.html",
-    "href": "full_stack.html",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Full Stack"
-    ]
-  },
-  {
-    "objectID": "full_stack.html#title-2-header",
-    "href": "full_stack.html#title-2-header",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Full Stack"
-    ]
-  },
-  {
-    "objectID": "Cleansing_Projects/project5.html",
-    "href": "Cleansing_Projects/project5.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Data Cleansing",
-      "Project 5"
-    ]
-  },
-  {
-    "objectID": "Cleansing_Projects/project4.html",
-    "href": "Cleansing_Projects/project4.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Data Cleansing",
-      "Project 4"
-    ]
-  },
-  {
-    "objectID": "Cleansing_Projects/project3.html",
-    "href": "Cleansing_Projects/project3.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Data Cleansing",
-      "Project 3"
-    ]
-  },
-  {
-    "objectID": "Story_Telling/project1.html",
-    "href": "Story_Telling/project1.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Story Telling",
-      "Project 1"
-    ]
-  },
-  {
-    "objectID": "Story_Telling/project2.html",
-    "href": "Story_Telling/project2.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Story Telling",
-      "Project 2"
-    ]
-  },
-  {
-    "objectID": "resume.html",
-    "href": "resume.html",
-    "title": "Will Hardcastle’s Resume",
-    "section": "",
-    "text": "Student, Mathematician, Data Scientist.\n\n\nStudying mathematics and data science at BYU-Idaho\n\n\nMathematics, differential equations, machine learning\n\n\n\n\n2019-2021 Weber State University, Ogden, UT.\n2024 - now Brigham Young University - Idaho\n\n\n\n2021 Salutatorian, Fremont High, Plain City, UT\n2025\nBYU-I Scholarship, Rexburg, ID\nPizaa Hut Foundations Scholarship, Rexburg, ID\n\n\n\n2024 - Current BYU-I Data Science Society, Rexburg, ID\n\n\n\n2023 - Current Smith’s Food and Drug, North Ogden, UT\n\nPharmacy technician\n\n2024 For the Strength of Youth Conferences, MA, UT and CA\n\nCounselor, leading youth groups in activities and learning\n\n2021 - 2023 Arizona Tempe Mission, Tempe, AZ\n\nFull-time missionary"
-  },
-  {
-    "objectID": "resume.html#currently",
-    "href": "resume.html#currently",
-    "title": "Will Hardcastle’s Resume",
-    "section": "",
-    "text": "Studying mathematics and data science at BYU-Idaho\n\n\nMathematics, differential equations, machine learning"
-  },
-  {
-    "objectID": "resume.html#education",
-    "href": "resume.html#education",
-    "title": "Will Hardcastle’s Resume",
-    "section": "",
-    "text": "2019-2021 Weber State University, Ogden, UT.\n2024 - now Brigham Young University - Idaho"
-  },
-  {
-    "objectID": "resume.html#awards",
-    "href": "resume.html#awards",
-    "title": "Will Hardcastle’s Resume",
-    "section": "",
-    "text": "2021 Salutatorian, Fremont High, Plain City, UT\n2025\nBYU-I Scholarship, Rexburg, ID\nPizaa Hut Foundations Scholarship, Rexburg, ID"
-  },
-  {
-    "objectID": "resume.html#experience",
-    "href": "resume.html#experience",
-    "title": "Will Hardcastle’s Resume",
-    "section": "",
-    "text": "2024 - Current BYU-I Data Science Society, Rexburg, ID"
-  },
-  {
-    "objectID": "resume.html#occupation",
-    "href": "resume.html#occupation",
-    "title": "Will Hardcastle’s Resume",
-    "section": "",
-    "text": "2023 - Current Smith’s Food and Drug, North Ogden, UT\n\nPharmacy technician\n\n2024 For the Strength of Youth Conferences, MA, UT and CA\n\nCounselor, leading youth groups in activities and learning\n\n2021 - 2023 Arizona Tempe Mission, Tempe, AZ\n\nFull-time missionary"
-  },
-  {
-    "objectID": "Machine_Learning/project5.html",
-    "href": "Machine_Learning/project5.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Machine Learning",
-      "Project 5"
-    ]
-  },
-  {
-    "objectID": "Machine_Learning/project4.html",
-    "href": "Machine_Learning/project4.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Machine Learning",
-      "Project 4"
-    ]
-  },
-  {
-    "objectID": "Machine_Learning/project3.html",
-    "href": "Machine_Learning/project3.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Machine Learning",
-      "Project 3"
-    ]
-  },
-  {
-    "objectID": "exploration.html",
-    "href": "exploration.html",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Data Exploration"
-    ]
-  },
-  {
-    "objectID": "exploration.html#title-2-header",
-    "href": "exploration.html#title-2-header",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Data Exploration"
-    ]
-  },
-  {
-    "objectID": "competition.html",
-    "href": "competition.html",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Competition"
-    ]
-  },
-  {
-    "objectID": "competition.html#title-2-header",
-    "href": "competition.html#title-2-header",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Competition"
-    ]
-  },
-  {
-    "objectID": "Competition/project1.html",
-    "href": "Competition/project1.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Competition",
-      "Project 1"
-    ]
-  },
-  {
-    "objectID": "Competition/project2.html",
-    "href": "Competition/project2.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Competition",
-      "Project 2"
-    ]
-  },
-  {
-    "objectID": "Competition/project3.html",
-    "href": "Competition/project3.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Competition",
-      "Project 3"
-    ]
-  },
-  {
-    "objectID": "Competition/project4.html",
-    "href": "Competition/project4.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Competition",
-      "Project 4"
-    ]
-  },
-  {
-    "objectID": "Competition/project5.html",
-    "href": "Competition/project5.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Competition",
-      "Project 5"
-    ]
-  },
-  {
-    "objectID": "story_telling.html",
-    "href": "story_telling.html",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Story Telling"
-    ]
-  },
-  {
-    "objectID": "story_telling.html#title-2-header",
-    "href": "story_telling.html#title-2-header",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Story Telling"
-    ]
-  },
-  {
-    "objectID": "ml.html",
-    "href": "ml.html",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Machine Learning"
-    ]
-  },
-  {
-    "objectID": "ml.html#title-2-header",
-    "href": "ml.html#title-2-header",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Machine Learning"
-    ]
-  },
-  {
-    "objectID": "Machine_Learning/project2.html",
-    "href": "Machine_Learning/project2.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Machine Learning",
-      "Project 2"
-    ]
-  },
-  {
-    "objectID": "Machine_Learning/project1.html",
-    "href": "Machine_Learning/project1.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Machine Learning",
-      "Project 1"
-    ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics"
-  },
-  {
-    "objectID": "index.html#title-2-header",
-    "href": "index.html#title-2-header",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics"
-  },
-  {
-    "objectID": "Story_Telling/project3.html",
-    "href": "Story_Telling/project3.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Story Telling",
-      "Project 3"
-    ]
-  },
-  {
-    "objectID": "Story_Telling/project4.html",
-    "href": "Story_Telling/project4.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Story Telling",
-      "Project 4"
-    ]
-  },
-  {
-    "objectID": "Story_Telling/project5.html",
-    "href": "Story_Telling/project5.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Story Telling",
-      "Project 5"
-    ]
-  },
-  {
-    "objectID": "Cleansing_Projects/project2.html",
-    "href": "Cleansing_Projects/project2.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Data Cleansing",
-      "Project 2"
-    ]
-  },
-  {
-    "objectID": "Cleansing_Projects/project1.html",
-    "href": "Cleansing_Projects/project1.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top",
-    "crumbs": [
-      "Data Cleansing",
-      "Project 1"
-    ]
-  },
-  {
-    "objectID": "cleansing.html",
-    "href": "cleansing.html",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Data Cleansing"
-    ]
-  },
-  {
-    "objectID": "cleansing.html#title-2-header",
-    "href": "cleansing.html#title-2-header",
-    "title": "about me",
-    "section": "",
-    "text": "MarkDown Basics",
-    "crumbs": [
-      "Data Cleansing"
-    ]
-  },
-  {
-    "objectID": "Cleansing_Exploration/project3.html",
-    "href": "Cleansing_Exploration/project3.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "Cleansing_Exploration/project4.html",
-    "href": "Cleansing_Exploration/project4.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "Cleansing_Exploration/project5.html",
-    "href": "Cleansing_Exploration/project5.html",
-    "title": "Client Report - [Insert Project Title]",
-    "section": "",
-    "text": "Paste in a template\n\n\n\n\n Back to top"
-  },
-  {
     "objectID": "notebooks/Exploration_03.html",
     "href": "notebooks/Exploration_03.html",
     "title": "Data Exploration 03",
@@ -616,6 +136,493 @@
     "title": "Data Exploration 03",
     "section": "🌟 Above and Beyond 🌟",
     "text": "🌟 Above and Beyond 🌟\n\nThere appears to be a lot of different variations of similar titles. (such as abbreviations for Miss and Mademoiselle).\nScan through the different titles to see which titles can be consolidated, then use what you know about data manipulation to simplify the distribution.\nOnce you’ve finished, check the visualizations again to see if that made any difference.\nThe museum curator has room for a couple of nice visualizations for the exhibit. Create additional visualizations that are suitable for public display.\n\n\ndf['age_bin'] = pd.cut(df['Age'], bins=[0, 12, 18, 30, 50, 80],\n                            labels=['Child', 'Teen', 'Young Adult', 'Adult', 'Senior'])\nax = sns.catplot(data=df, x='age_bin', hue='Survived', kind='count', palette=[\"lightblue\",\"orange\"])\nax.set_titles(\"Survival by Age Group\")\nax.set_xlabels(\"Age Group\")\nax.set_ylabels(\"\")\nplt.figure(figsize=(12, 6))\n\n\n\n\n\n\n\n\n&lt;Figure size 1200x600 with 0 Axes&gt;\n\n\n\nax = sns.catplot(data = df, x = \"Pclass\", y = \"Fare\", kind = \"box\", color = \"lightblue\")\nax.set_titles(\"Fare by Passenger Class\")\nax.set_xlabels(\"Passenger Class\")\nax.set_ylabels(\"Fare\")\nplt.figure(figsize=(12, 6))\n\n\n\n\n\n\n\n\n&lt;Figure size 1200x600 with 0 Axes&gt;"
+  },
+  {
+    "objectID": "Cleansing_Exploration/project5.html",
+    "href": "Cleansing_Exploration/project5.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "Cleansing_Exploration/project4.html",
+    "href": "Cleansing_Exploration/project4.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "Cleansing_Exploration/project3.html",
+    "href": "Cleansing_Exploration/project3.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "cleansing.html",
+    "href": "cleansing.html",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Data Cleansing"
+    ]
+  },
+  {
+    "objectID": "cleansing.html#title-2-header",
+    "href": "cleansing.html#title-2-header",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Data Cleansing"
+    ]
+  },
+  {
+    "objectID": "Cleansing_Projects/project1.html",
+    "href": "Cleansing_Projects/project1.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Data Cleansing",
+      "Project 1"
+    ]
+  },
+  {
+    "objectID": "Cleansing_Projects/project2.html",
+    "href": "Cleansing_Projects/project2.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Data Cleansing",
+      "Project 2"
+    ]
+  },
+  {
+    "objectID": "Story_Telling/project5.html",
+    "href": "Story_Telling/project5.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Story Telling",
+      "Project 5"
+    ]
+  },
+  {
+    "objectID": "Story_Telling/project4.html",
+    "href": "Story_Telling/project4.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Story Telling",
+      "Project 4"
+    ]
+  },
+  {
+    "objectID": "Story_Telling/project3.html",
+    "href": "Story_Telling/project3.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Story Telling",
+      "Project 3"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics"
+  },
+  {
+    "objectID": "index.html#title-2-header",
+    "href": "index.html#title-2-header",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics"
+  },
+  {
+    "objectID": "Machine_Learning/project1.html",
+    "href": "Machine_Learning/project1.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Machine Learning",
+      "Project 1"
+    ]
+  },
+  {
+    "objectID": "Machine_Learning/project2.html",
+    "href": "Machine_Learning/project2.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Machine Learning",
+      "Project 2"
+    ]
+  },
+  {
+    "objectID": "ml.html",
+    "href": "ml.html",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Machine Learning"
+    ]
+  },
+  {
+    "objectID": "ml.html#title-2-header",
+    "href": "ml.html#title-2-header",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Machine Learning"
+    ]
+  },
+  {
+    "objectID": "story_telling.html",
+    "href": "story_telling.html",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Story Telling"
+    ]
+  },
+  {
+    "objectID": "story_telling.html#title-2-header",
+    "href": "story_telling.html#title-2-header",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Story Telling"
+    ]
+  },
+  {
+    "objectID": "Competition/project5.html",
+    "href": "Competition/project5.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Competition",
+      "Project 5"
+    ]
+  },
+  {
+    "objectID": "Competition/project4.html",
+    "href": "Competition/project4.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Competition",
+      "Project 4"
+    ]
+  },
+  {
+    "objectID": "Competition/project3.html",
+    "href": "Competition/project3.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Competition",
+      "Project 3"
+    ]
+  },
+  {
+    "objectID": "Competition/project2.html",
+    "href": "Competition/project2.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Competition",
+      "Project 2"
+    ]
+  },
+  {
+    "objectID": "Competition/project1.html",
+    "href": "Competition/project1.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Competition",
+      "Project 1"
+    ]
+  },
+  {
+    "objectID": "competition.html",
+    "href": "competition.html",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Competition"
+    ]
+  },
+  {
+    "objectID": "competition.html#title-2-header",
+    "href": "competition.html#title-2-header",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Competition"
+    ]
+  },
+  {
+    "objectID": "exploration.html",
+    "href": "exploration.html",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Data Exploration"
+    ]
+  },
+  {
+    "objectID": "exploration.html#title-2-header",
+    "href": "exploration.html#title-2-header",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Data Exploration"
+    ]
+  },
+  {
+    "objectID": "Machine_Learning/project3.html",
+    "href": "Machine_Learning/project3.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Machine Learning",
+      "Project 3"
+    ]
+  },
+  {
+    "objectID": "Machine_Learning/project4.html",
+    "href": "Machine_Learning/project4.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Machine Learning",
+      "Project 4"
+    ]
+  },
+  {
+    "objectID": "Machine_Learning/project5.html",
+    "href": "Machine_Learning/project5.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Machine Learning",
+      "Project 5"
+    ]
+  },
+  {
+    "objectID": "resume.html",
+    "href": "resume.html",
+    "title": "Will Hardcastle’s Resume",
+    "section": "",
+    "text": "Student, Mathematician, Data Scientist.\n\n\nStudying mathematics and data science at BYU-Idaho\n\n\nMathematics, differential equations, machine learning\n\n\n\n\n2019-2021 Weber State University, Ogden, UT.\n2024 - now Brigham Young University - Idaho\n\n\n\n2021 Salutatorian, Fremont High, Plain City, UT\n2025\nBYU-I Scholarship, Rexburg, ID\nPizaa Hut Foundations Scholarship, Rexburg, ID\n\n\n\n2024 - Current BYU-I Data Science Society, Rexburg, ID\n\n\n\n2023 - Current Smith’s Food and Drug, North Ogden, UT\n\nPharmacy technician\n\n2024 For the Strength of Youth Conferences, MA, UT and CA\n\nCounselor, leading youth groups in activities and learning\n\n2021 - 2023 Arizona Tempe Mission, Tempe, AZ\n\nFull-time missionary"
+  },
+  {
+    "objectID": "resume.html#currently",
+    "href": "resume.html#currently",
+    "title": "Will Hardcastle’s Resume",
+    "section": "",
+    "text": "Studying mathematics and data science at BYU-Idaho\n\n\nMathematics, differential equations, machine learning"
+  },
+  {
+    "objectID": "resume.html#education",
+    "href": "resume.html#education",
+    "title": "Will Hardcastle’s Resume",
+    "section": "",
+    "text": "2019-2021 Weber State University, Ogden, UT.\n2024 - now Brigham Young University - Idaho"
+  },
+  {
+    "objectID": "resume.html#awards",
+    "href": "resume.html#awards",
+    "title": "Will Hardcastle’s Resume",
+    "section": "",
+    "text": "2021 Salutatorian, Fremont High, Plain City, UT\n2025\nBYU-I Scholarship, Rexburg, ID\nPizaa Hut Foundations Scholarship, Rexburg, ID"
+  },
+  {
+    "objectID": "resume.html#experience",
+    "href": "resume.html#experience",
+    "title": "Will Hardcastle’s Resume",
+    "section": "",
+    "text": "2024 - Current BYU-I Data Science Society, Rexburg, ID"
+  },
+  {
+    "objectID": "resume.html#occupation",
+    "href": "resume.html#occupation",
+    "title": "Will Hardcastle’s Resume",
+    "section": "",
+    "text": "2023 - Current Smith’s Food and Drug, North Ogden, UT\n\nPharmacy technician\n\n2024 For the Strength of Youth Conferences, MA, UT and CA\n\nCounselor, leading youth groups in activities and learning\n\n2021 - 2023 Arizona Tempe Mission, Tempe, AZ\n\nFull-time missionary"
+  },
+  {
+    "objectID": "Story_Telling/project2.html",
+    "href": "Story_Telling/project2.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Story Telling",
+      "Project 2"
+    ]
+  },
+  {
+    "objectID": "Story_Telling/project1.html",
+    "href": "Story_Telling/project1.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Story Telling",
+      "Project 1"
+    ]
+  },
+  {
+    "objectID": "Cleansing_Projects/project3.html",
+    "href": "Cleansing_Projects/project3.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Data Cleansing",
+      "Project 3"
+    ]
+  },
+  {
+    "objectID": "Cleansing_Projects/project4.html",
+    "href": "Cleansing_Projects/project4.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Data Cleansing",
+      "Project 4"
+    ]
+  },
+  {
+    "objectID": "Cleansing_Projects/project5.html",
+    "href": "Cleansing_Projects/project5.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Data Cleansing",
+      "Project 5"
+    ]
+  },
+  {
+    "objectID": "full_stack.html",
+    "href": "full_stack.html",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Full Stack"
+    ]
+  },
+  {
+    "objectID": "full_stack.html#title-2-header",
+    "href": "full_stack.html#title-2-header",
+    "title": "about me",
+    "section": "",
+    "text": "MarkDown Basics",
+    "crumbs": [
+      "Full Stack"
+    ]
+  },
+  {
+    "objectID": "Cleansing_Exploration/project2.html",
+    "href": "Cleansing_Exploration/project2.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "Cleansing_Exploration/project1.html",
+    "href": "Cleansing_Exploration/project1.html",
+    "title": "Client Report - [Insert Project Title]",
+    "section": "",
+    "text": "Paste in a template\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "notebooks/Exploration_04.html",
+    "href": "notebooks/Exploration_04.html",
+    "title": "Data Exploration 04",
+    "section": "",
+    "text": "You’re working with a team of botanists to develop a flower classification system.\nYour assignment is to build a k-Nearest Neighbors model to classify flowers based on their petal and sepal sizes."
+  },
+  {
+    "objectID": "notebooks/Exploration_04.html#part-a-import-and-explore-the-data",
+    "href": "notebooks/Exploration_04.html#part-a-import-and-explore-the-data",
+    "title": "Data Exploration 04",
+    "section": "Part A: Import and Explore the data",
+    "text": "Part A: Import and Explore the data\nThe dataset for this exploration is stored at the following url:\nhttps://raw.githubusercontent.com/byui-cse/cse450-course/master/data/iris.csv\n\nInitial Data Analysis\nOnce you’ve loaded the data, it’s a good idea to poke around a little bit to find out what you’re dealing with.\nSome questions you might ask include:\n\nWhat does the data look like?\nWhat kind of data is in each column?\nDo any of the columns have missing values?\n\n\nimport pandas as pd\nimport seaborn as sns\nimport matplotlib.pyplot as plt\ndf = pd.read_csv(\"https://raw.githubusercontent.com/byui-cse/cse450-course/master/data/iris.csv\")\n\n\ndf.head()\n\n\n    \n\n\n\n\n\n\nsepal_length\nsepal_width\npetal_length\npetal_width\nspecies\n\n\n\n\n0\n5.1\n3.5\n1.4\n0.2\nIris-setosa\n\n\n1\n4.9\n3.0\n1.4\n0.2\nIris-setosa\n\n\n2\n4.7\n3.2\n1.3\n0.2\nIris-setosa\n\n\n3\n4.6\n3.1\n1.5\n0.2\nIris-setosa\n\n\n4\n5.0\n3.6\n1.4\n0.2\nIris-setosa\n\n\n\n\n\n    \n\n  \n    \n\n  \n    \n  \n    \n\n  \n\n    \n  \n\n\n    \n      \n\n\n    \n        \n    \n\n      \n\n\n\n      \n    \n\n    \n  \n\n\n\ndf.info()\n\n&lt;class 'pandas.core.frame.DataFrame'&gt;\nRangeIndex: 150 entries, 0 to 149\nData columns (total 5 columns):\n #   Column        Non-Null Count  Dtype  \n---  ------        --------------  -----  \n 0   sepal_length  150 non-null    float64\n 1   sepal_width   150 non-null    float64\n 2   petal_length  150 non-null    float64\n 3   petal_width   150 non-null    float64\n 4   species       150 non-null    object \ndtypes: float64(4), object(1)\nmemory usage: 6.0+ KB"
+  },
+  {
+    "objectID": "notebooks/Exploration_04.html#part-b-visualize-the-data",
+    "href": "notebooks/Exploration_04.html#part-b-visualize-the-data",
+    "title": "Data Exploration 04",
+    "section": "Part B: Visualize the Data",
+    "text": "Part B: Visualize the Data\nUse your preferred visualization library to create a scatterplot showing petal length vs petal width. You should plot each flower species as a different color on the scatter plot.\n\nsns.catplot(data = df, x = \"petal_length\", y = \"petal_width\", hue = \"species\")\nplt.xticks(rotation = 90);"
+  },
+  {
+    "objectID": "notebooks/Exploration_04.html#part-c-prepare-the-data-for-machine-learning",
+    "href": "notebooks/Exploration_04.html#part-c-prepare-the-data-for-machine-learning",
+    "title": "Data Exploration 04",
+    "section": "Part C: Prepare the Data for Machine Learning",
+    "text": "Part C: Prepare the Data for Machine Learning\nData preparation (sometimes called “data wrangling” or “data munging”) is where you’ll usually spend the bulk of your time when working on machine learning problems. Only rarely is data already in the optimal form for a given algorithm.\nOften we have to deal with missing values, normalize the data, and perform both simple and complex feature engineering to get the data into the form we need.\nOnce the data is in the correct form, we can then randomize the data and split it into training and test datasets (and sometimes an additional validation dataset).\n\nMachine Learning Steps\nAlmost universally, regardless of which algorithm or type of task we’re performing, building and evaluating a machine learning model with sklearn follows these steps:\n\nPerform any data preprocessing needed.\nPartition the data into features and targets.\nSplit the data into training and test sets (and sometimes a third validation set).\nCreate a configure whichever sklearn model object we’re using.\nTrain the model using its “fit” method.\nTest the model using its “predict” method.\nUse a model evaluation metric to see how well the model performs.\n\nIf the model isn’t performing well, we will repeat one or more of the above steps (sometimes all of them).\nOnce the model is performing adequately, we’ll deploy it for use as part of some larger system.\nFor now, let’s assume that this dataset is in the form we need, and we’ll skip to step 2, partitioning the data.\n\n\nStep 2. Partition the Data into Features and Targets\nFirst, we’ll create a dataframe called “X” containing the features of the data we want to use to make our predictions. In this case, that will be the sepal_length, sepal_width, petal_length, and petal_width features.\n(The name “X” isn’t special, but uppercase X is the conventional name for our feature dataset, because that’s what statisticians use to refer to a matrix of independent variables)\n\n# Create a new dataframe called X that contians the features we're going\n# to use to make predictions\nX = df[[\"sepal_length\",\"sepal_width\",\"petal_length\",\"sepal_width\"]]\n\nNext we’ll create a dataframe called “y” containing the target variable, or the set of values we want to predict. In this case, that will be species.\n(Once again, the name “y” isn’t special, but lowercase y is the conventional name for a list of targets, because that’s what statisticians use to refer to a vector of dependent variables)\n\n# Create a new dataframe called y that contians the target we're\n# trying to predict\ny = df[\"species\"]\n\n\n\nStep 3. Split the data into training and test sets.\nNow that we have our data divided into features (X) and target values (y), we’ll split each of these into a training set and a test set.\nWe’ll use the training sets to “train” our model how to make predictions.\nWe’ll then use our test sets to test how well our model has learned from the training data.\nWhile we could use a bunch of python code to do this step, the sklearn library has lots of built-in functions to handle common data manipulations related to machine learning.\nFor this step, we’ll use the train_test_split() function.\n\n# Import and use the train_test_split() function to split the X and y\n# dataframes into training and test sets.\nfrom sklearn.model_selection import train_test_split\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, train_size = 0.8)\n# The training data should contain 80% of the samples and\n# the test data should contain 20% of the samples.\n\nAfter creating the training and test splits, output the head() of each one and notice how they row numbers have been randomized.\nAlso notice that X_train and y_train’s row numbers match up, as do X_test and y_test’s row numbers.\n\nX_test.head()\n\n\n    \n\n\n\n\n\n\nsepal_length\nsepal_width\npetal_length\nsepal_width\n\n\n\n\n58\n6.6\n2.9\n4.6\n2.9\n\n\n89\n5.5\n2.5\n4.0\n2.5\n\n\n54\n6.5\n2.8\n4.6\n2.8\n\n\n10\n5.4\n3.7\n1.5\n3.7\n\n\n125\n7.2\n3.2\n6.0\n3.2\n\n\n\n\n\n    \n\n  \n    \n\n  \n    \n  \n    \n\n  \n\n    \n  \n\n\n    \n      \n\n\n    \n        \n    \n\n      \n\n\n\n      \n    \n\n    \n  \n\n\n\ny_test.head()\n\n\n\n\n\n\n\n\nspecies\n\n\n\n\n58\nIris-versicolor\n\n\n89\nIris-versicolor\n\n\n54\nIris-versicolor\n\n\n10\nIris-setosa\n\n\n125\nIris-virginica\n\n\n\n\ndtype: object"
+  },
+  {
+    "objectID": "notebooks/Exploration_04.html#part-d-create-and-train-a-model",
+    "href": "notebooks/Exploration_04.html#part-d-create-and-train-a-model",
+    "title": "Data Exploration 04",
+    "section": "Part D: Create and Train a Model",
+    "text": "Part D: Create and Train a Model\nWe’re going to create a model based on the k-Nearest Neighbors algorithm.\nSince this is a classification task, (we’re trying to classify which species a given flower belongs to), we’ll use sklearn’s KNeighborsClassifer.\n\nStep 4. Create and configure the model\nWe start by importing the information about the model we want to create. In python, this information is called a class.\nThe KNeighborsClassifier class contains all of the information python needs to create a kNN Classifier.\nOnce we’ve imported the class, we’ll create an instance of the class using this syntax:\nwhatever = ClassName( parameter_one = value, parameter_two = something_else, etc...)\nIn our case, the class name is KNeighborsClassifer. It doesn’t matter what we call the variable that holds the instance, but one popular convention is to call classifier instances clf, so that’s what you’ll see in the sklearn documentation.\nThe only parameter we want to configure is the n_neighbors parameter, which controls the value of k in the kNN algorithm.\n\n# Import the KNeighborsClassifier class from sklearn\n# Note that it's in the neighbors submodule. See the example code in the\n# documentation for details on how to import it\nfrom sklearn.neighbors import KNeighborsClassifier\n\n\n# Create an instance of the model, configuring it to use the 3 nearest neighbors\n# store the instance in a variable\nclf = KNeighborsClassifier(n_neighbors=3)\n\n\n\nStep 5: Train the model\nNext we’ll train the model. We do this by providing it with the training data we split off from the dataset in step 3.\nThe model “learns” how to associate the feature values (X) with the targets (y). The exact process it uses to learn how to do this depends on which algorithm we’re using.\nSometimes, this is called “fitting the data to the model”, so in sklearn, we perform this step using the fit() method.\n\n# Call the \"fit\" method of the classifier instance we created in step 4.\n# Pass it the X_train and y_train data so that it can learn to make predictions\nclf.fit(X_train, y_train)\n\nKNeighborsClassifier(n_neighbors=3)In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.KNeighborsClassifier?Documentation for KNeighborsClassifieriFittedKNeighborsClassifier(n_neighbors=3)"
+  },
+  {
+    "objectID": "notebooks/Exploration_04.html#part-e-make-predictions-and-evaluate-the-model",
+    "href": "notebooks/Exploration_04.html#part-e-make-predictions-and-evaluate-the-model",
+    "title": "Data Exploration 04",
+    "section": "Part E: Make Predictions and Evaluate the Model",
+    "text": "Part E: Make Predictions and Evaluate the Model\nNow that the model has been created and trained, we can use it to make predictions. Since this is a classification model, when we give it a set of features, it tells us what the most likely target value is.\nIn this case, we tell the model “here are the values for petal width, petal length, sepal width, and sepal length for a particular flower” The model then tells us which species is the most likely for that flower.\nWhen testing how well our model works, we’ll use the test data we split off earlier. It contains the measurements for several flowers, along with their species.\n\nStep 6: Make Predictions on Test Data\nWe’ll give the measurements of each flower to the model and have it predict their species. We’ll then compare those predictions to the known values to determine how accurate our model is.\nSince this is a classification model, there are two different methods we can use to make predictions:\n\npredict(), which returns the most likely prediction for each sample.\npredict_proba() which returns a list of probabilities for each sample. The probabilities tell us how confident the model is that the corresponding sample belongs to a particular class.\n\n\n# Use the predict() method to get a list of predictions for the samples in our\n# test data. Then output those predictions\nclf.predict(X_test)\n\narray(['Iris-versicolor', 'Iris-versicolor', 'Iris-virginica',\n       'Iris-setosa', 'Iris-virginica', 'Iris-versicolor',\n       'Iris-versicolor', 'Iris-setosa', 'Iris-virginica',\n       'Iris-virginica', 'Iris-setosa', 'Iris-virginica',\n       'Iris-versicolor', 'Iris-versicolor', 'Iris-virginica',\n       'Iris-virginica', 'Iris-setosa', 'Iris-setosa', 'Iris-versicolor',\n       'Iris-versicolor', 'Iris-versicolor', 'Iris-virginica',\n       'Iris-versicolor', 'Iris-setosa', 'Iris-setosa', 'Iris-versicolor',\n       'Iris-setosa', 'Iris-setosa', 'Iris-versicolor', 'Iris-setosa'],\n      dtype=object)\n\n\n\n# Just a quick comparison with y_test to see if they match up\ny_test\n\n\n\n\n\n\n\n\nspecies\n\n\n\n\n58\nIris-versicolor\n\n\n89\nIris-versicolor\n\n\n54\nIris-versicolor\n\n\n10\nIris-setosa\n\n\n125\nIris-virginica\n\n\n56\nIris-versicolor\n\n\n92\nIris-versicolor\n\n\n7\nIris-setosa\n\n\n112\nIris-virginica\n\n\n142\nIris-virginica\n\n\n47\nIris-setosa\n\n\n115\nIris-virginica\n\n\n50\nIris-versicolor\n\n\n85\nIris-versicolor\n\n\n121\nIris-virginica\n\n\n140\nIris-virginica\n\n\n14\nIris-setosa\n\n\n27\nIris-setosa\n\n\n61\nIris-versicolor\n\n\n66\nIris-versicolor\n\n\n75\nIris-versicolor\n\n\n77\nIris-versicolor\n\n\n74\nIris-versicolor\n\n\n36\nIris-setosa\n\n\n33\nIris-setosa\n\n\n81\nIris-versicolor\n\n\n42\nIris-setosa\n\n\n20\nIris-setosa\n\n\n60\nIris-versicolor\n\n\n45\nIris-setosa\n\n\n\n\ndtype: object\n\n\n\n\nStep 7: Evaluate the Model\nThere are several metrics we can use to determine how well our model is performing.\nMost of them are in the sklearn.metrics library.\nMost of the sklearn metric function work using the same pattern. We import the function, then give it a list of the true values for our test data, and a list of the values the model predicted for our test data. The metric then outputs the value. How we interpret that value will depend on the exact problem we’re solving, the qualities of our data, and the particular metric we’re using.\n\nAccuracy\nSince this is a multiclass classification problem (“multiclass” means we have more than two options we’re choosing from), we can get a quick estimate from the accuracy_score() function, which tells us the percent of correct predictions made by the model.\n\n# Import the accuracy_score function and use it to determine\n# how accurate the models predictions were for our test data\nfrom sklearn.metrics import accuracy_score\naccuracy_score(y_test, clf.predict(X_test))\n\n0.9333333333333333\n\n\n\n\nConfusion Matrix\nWhile the accuracy score tells us a little about the model’s performance, it doesn’t tell us much.\nFor example, we know how often the model was correct, but we don’t know when it was wrong or why.\nWe can get this information from the confusion_matrix function.\n\n# Import the confusion_matrix function and use it to generate a confusion\n# matrix of our model results.\nfrom sklearn.metrics import confusion_matrix\nconfusion_matrix(y_test, clf.predict(X_test))\n\narray([[10,  0,  0],\n       [ 0, 12,  2],\n       [ 0,  0,  6]])\n\n\n\n\nConfusion Matrix Plot\nIt’s easier to see the results of the confusion matrix if we plot the results. One way to do this is with Seaborn’s heatmap function.\nThis function works a little bit differently than the others. It takes as parameters your model instance, and then options for making the chart display the way you want, and outputs a confusion matrix showing how well the model did in predicting the target values.\nYou’ll notice that in many cases (including this one), the numbers in the confusion matrix will be the same as the results you see from the confusion_matrix() function above, but the plot makes it easier to interpret the results.\nWhen using the confusion matrix, you may find that the default color mapping is difficult to read. The “Blues” mapping is a popular choice.\n\n# Create a Seaborn heatmap\nma = confusion_matrix(y_test, clf.predict(X_test))\nsns.heatmap(data = ma, cmap = \"Blues\")"
+  },
+  {
+    "objectID": "notebooks/Exploration_04.html#above-and-beyond",
+    "href": "notebooks/Exploration_04.html#above-and-beyond",
+    "title": "Data Exploration 04",
+    "section": "🌟 Above and Beyond 🌟",
+    "text": "🌟 Above and Beyond 🌟\nOnce you’ve complted the basics, try to complete one or more of the following tasks:\n\nSee if you can get better results from your model through some data preprocessing, such as normalization.\nOften, using too many features can give poor results. Can you get better performance using a subset of the features instead of all four?\nAre there other ways you could visualize your model results?\n\n\ndf_sub = df.drop(\"petal_length\", axis = 1)\n\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, train_size = 0.8)\nclf_sub=KNeighborsClassifier(n_neighbors=3)\nclf_sub.fit(X_train, y_train)\n\nKNeighborsClassifier(n_neighbors=3)In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.KNeighborsClassifier?Documentation for KNeighborsClassifieriFittedKNeighborsClassifier(n_neighbors=3) \n\n\n\naccuracy_score(y_test, clf.predict(X_test))\nconfusion_matrix(y_test, clf.predict(X_test))\n\narray([[ 9,  0,  0],\n       [ 0, 10,  0],\n       [ 0,  0, 11]])\n\n\n\nma = confusion_matrix(y_test, clf.predict(X_test))\nsns.heatmap(data = ma, cmap = \"Blues\")"
+  },
+  {
+    "objectID": "notebooks/starter_signs.html",
+    "href": "notebooks/starter_signs.html",
+    "title": "Testing the model",
+    "section": "",
+    "text": "# Note: After you run this cell, the training and test data will be available in\n# the file browser. (Click the folder icon on the left to view it)\n#\n# If you don't see the data after the cell completes, click the refresh button\n# in the file browser (folder icon with circular arrow)\n\n# First, let's download and unzip the data\n!echo \"Downloading files...\"\n!wget -q https://github.com/byui-cse/cse450-course/raw/master/data/roadsigns/training1.zip\n!wget -q https://github.com/byui-cse/cse450-course/raw/master/data/roadsigns/training2.zip\n!wget -q https://github.com/byui-cse/cse450-course/raw/master/data/roadsigns/holdout.zip\n!wget -q https://github.com/byui-cse/cse450-course/raw/master/data/roadsigns/mini_holdout.zip\n!wget -q https://github.com/byui-cse/cse450-course/raw/master/data/roadsigns/mini_holdout_answers.csv\n\n!echo \"Unzipping files...\"\n!unzip -q /content/training1.zip\n!unzip -q /content/training2.zip\n!unzip -q /content/holdout.zip\n!unzip -q /content/mini_holdout.zip\n\n# Combine the two traning directories\n!echo \"Merging training data...\"\n!mkdir /content/training\n!mv /content/training1/* /content/training\n!mv /content/training2/* /content/training\n\n# Cleanup\n!echo \"Cleaning up...\"\n!rmdir /content/training1\n!rmdir /content/training2\n!rm training1.zip\n!rm training2.zip\n!rm holdout.zip\n!rm mini_holdout.zip\n\n!echo \"Data ready.\"\n\nDownloading files...\nUnzipping files...\nMerging training data...\nCleaning up...\nData ready.\n\n\n\n# Import libraries\nimport pandas as pd\nimport tensorflow as tf\nfrom tensorflow import keras\nimport matplotlib.pyplot as plt\nimport numpy as np\nfrom tensorflow.keras.preprocessing.image import ImageDataGenerator\nfrom tensorflow.keras import layers\nimport seaborn as sns\nimport cv2\nfrom pathlib import Path\nimport os\nfrom sklearn.metrics import classification_report, confusion_matrix\n\n\n# We're using keras' ImageDataGenerator class to load our image data.\n# See (https://keras.io/api/preprocessing/image/#imagedatagenerator-class) for details\n#\n# A couple of things to note:\n# 1. We're specifying a number for the seed, so we'll always get the same shuffle and split of our images.\n# 2. Class names are inferred automatically from the image subdirectory names.\n# 3. We're splitting the training data into 80% training, 20% validation.\n\n\ntraining_dir = '/content/training/'\nimage_size = (100, 100)\n\n# Split up the training data images into training and validations sets\n# We'll use and ImageDataGenerator to do the splits\n# ImageDataGenerator can also be used to do preprocessing and agumentation on the files as can be seen with rescale\n\ntrain_datagen = ImageDataGenerator(\n        rescale=1./255,\n        validation_split=.2\n        )\nvalidation_datagen = ImageDataGenerator(\n        rescale=1./255,\n        validation_split=.2\n        )\n\ntrain_generator = train_datagen.flow_from_directory(\n        training_dir,\n        target_size = image_size,\n        subset=\"training\",\n        batch_size=32,\n        class_mode='sparse',\n        seed=42,shuffle=True)\nvalidation_generator = validation_datagen.flow_from_directory(\n        training_dir,\n        target_size=image_size,\n        batch_size=32,\n        class_mode='sparse',\n        subset=\"validation\",\n        seed=42)\n\n\nFound 31368 images belonging to 43 classes.\nFound 7841 images belonging to 43 classes.\n\n\n\n#these might come in handy\ntarget_names = ['Speed_20', 'Speed_30', 'Speed_50', 'Speed_60', 'Speed_70',\n               'Speed_80','Speed_Limit_Ends', 'Speed_100', 'Speed_120', 'Overtaking_Prohibited',\n               'Overtakeing_Prohibited_Trucks', 'Priority', 'Priority_Road_Ahead', 'Yield', 'STOP',\n               'Entry_Forbidden', 'Trucks_Forbidden', 'No_Entry(one-way traffic)', 'General Danger(!)', 'Left_Curve_Ahead',\n               'Right_Curve_Ahead', 'Double_Curve', 'Poor_Surface_Ahead', 'Slippery_Surface_Ahead', 'Road_Narrows_On_Right',\n               'Roadwork_Ahead', 'Traffic_Light_Ahead', 'Warning_Pedestrians', 'Warning_Children', 'Warning_Bikes',\n               'Ice_Snow', 'Deer_Crossing', 'End_Previous_Limitation', 'Turning_Right_Compulsory', 'Turning_Left_Compulsory',\n               'Ahead_Only', 'Straight_Or_Right_Mandatory', 'Straight_Or_Left_Mandatory', 'Passing_Right_Compulsory', 'Passing_Left_Compulsory',\n               'Roundabout', 'End_Overtaking_Prohibition', 'End_Overtaking_Prohibition_Trucks']\n\n\n#Map labels to signs\nimport matplotlib.pyplot as plt\n\n# target_names list\ntarget_names = ['Speed_20', 'Speed_30', 'Speed_50', 'Speed_60', 'Speed_70',\n    'Speed_80','Speed_Limit_Ends', 'Speed_100', 'Speed_120', 'Overtaking_Prohibited',\n    'Overtakeing_Prohibited_Trucks', 'Priority', 'Priority_Road_Ahead', 'Yield', 'STOP',\n    'Entry_Forbidden', 'Trucks_Forbidden', 'No_Entry(one-way traffic)', 'General Danger(!)', 'Left_Curve_Ahead',\n    'Right_Curve_Ahead', 'Double_Curve', 'Poor_Surface_Ahead', 'Slippery_Surface_Ahead', 'Road_Narrows_On_Right',\n    'Roadwork_Ahead', 'Traffic_Light_Ahead', 'Warning_Pedestrians', 'Warning_Children', 'Warning_Bikes',\n    'Ice_Snow', 'Deer_Crossing', 'End_Previous_Limitation', 'Turning_Right_Compulsory', 'Turning_Left_Compulsory',\n    'Ahead_Only', 'Straight_Or_Right_Mandatory', 'Straight_Or_Left_Mandatory', 'Passing_Right_Compulsory', 'Passing_Left_Compulsory',\n    'Roundabout', 'End_Overtaking_Prohibition', 'End_Overtaking_Prohibition_Trucks']\n\nplt.figure(figsize=(10, 10))\n\n# Get one batch from the generator\nimages, labels = next(train_generator)\nbatch_size = images.shape[0]\n\nfor i in range(min(9, batch_size)):\n    ax = plt.subplot(3, 3, i + 1)\n    plt.imshow((images[i] * 255).astype(\"uint8\"))\n\n    # Map numeric label to its corresponding name\n    label_index = int(labels[i])\n    label_name = target_names[label_index]\n\n    plt.title(label_name, fontsize=8)\n    plt.axis(\"off\")\n\nplt.tight_layout()\nplt.show()\n\n\n\n\n\n\n\n\n\n#Mount google drive to enalble checkpoint saving\nfrom google.colab import drive\n\n# This command opens a new tab/window for authentication\ndrive.mount('/content/drive')\n\nMounted at /content/drive\n\n\n\n# Build a model...\nimport tensorflow as tf\nfrom tensorflow import keras\nfrom tensorflow.keras import models, layers, callbacks\nfrom google.colab import drive\nimport os\n\n# ==============================================================================\n# 1. SETUP & CONFIGURATION\n# ==============================================================================\n# Mount Google Drive to save your best model permanently\ndrive.mount('/content/drive')\n\n# Configuration\nBATCH_SIZE = 32\nIMG_SIZE = (100, 100) # Matching the size from your original image\nDATA_DIR = '/content/training/' # The location created by the download/unzip cell\nCHECKPOINT_PATH = '/content/drive/MyDrive/my_best_traffic_model.keras' # Save location\n\n# ==============================================================================\n# 2. DATA LOADING (Modern Method)\n# ==============================================================================\nprint(\"Loading Training Data...\")\ntrain_ds = tf.keras.utils.image_dataset_from_directory(\n    DATA_DIR,\n    validation_split=0.2,\n    subset=\"training\",\n    seed=42,\n    image_size=IMG_SIZE,\n    batch_size=BATCH_SIZE,\n    label_mode='int' # Returns integer labels (0, 1, 2...)\n)\n\nprint(\"Loading Validation Data...\")\nval_ds = tf.keras.utils.image_dataset_from_directory(\n    DATA_DIR,\n    validation_split=0.2,\n    subset=\"validation\",\n    seed=42,\n    image_size=IMG_SIZE,\n    batch_size=BATCH_SIZE,\n    label_mode='int'\n)\n\n# Performance Optimization: Keep data in memory to speed up training\ntrain_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)\nval_ds = val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)\n\n# ==============================================================================\n# 3. AUGMENTATION & MODEL ARCHITECTURE\n# ==============================================================================\n# def create_augmentation_layer():\n#     return keras.Sequential([\n#         layers.RandomRotation(factor=0.042, fill_mode='nearest'),\n#         layers.RandomTranslation(height_factor=0.1, width_factor=0.1, fill_mode='nearest'),\n#         layers.RandomZoom(height_factor=(-0.2, 0.2), fill_mode='nearest'),\n#         layers.RandomBrightness(factor=0.2),\n#         layers.RandomContrast(factor=0.2),\n#     ], name='data_augmentation')\n\nmodel = models.Sequential([\n    layers.Input(shape=(100, 100, 3)),\n\n    # 1. Normalize pixel values from 0-255 to 0-1 (Crucial for convergence)\n    layers.Rescaling(1./255),\n\n    # 2. Augmentation (Only runs during training, not validation/testing)\n    # create_augmentation_layer(),\n\n    # 3. Convolutional Blocks\n    layers.Conv2D(32, (3, 3), activation='relu'),\n    layers.MaxPooling2D((2, 2)),\n\n    layers.Conv2D(64, (3, 3), activation='relu'),\n    layers.MaxPooling2D((2, 2)),\n\n    layers.Conv2D(128, (3, 3), activation='relu'),\n    layers.MaxPooling2D((2, 2)),\n\n    layers.Conv2D(256, (3, 3), activation='relu'),\n    layers.MaxPooling2D((2, 2)),\n\n    # 4. Classification Head\n    layers.Flatten(),\n    layers.Dense(256, activation='relu'),\n    layers.Dropout(0.3), # Low dropout as requested\n    layers.Dense(43, activation='softmax')\n])\n\n# ==============================================================================\n# 4. COMPILE & TRAIN\n# ==============================================================================\nmodel.compile(\n    optimizer='adam',\n    loss='sparse_categorical_crossentropy',\n    metrics=['accuracy']\n)\n\n# Callbacks\ncallbacks_list = [\n    # Save the model to Drive whenever validation accuracy improves\n    callbacks.ModelCheckpoint(\n        filepath=CHECKPOINT_PATH,\n        save_best_only=True,\n        monitor='val_accuracy',\n        mode='max',\n        verbose=1\n    ),\n    # Stop training if validation loss doesn't improve for 10 epochs\n    callbacks.EarlyStopping(\n        monitor='val_loss',\n        patience=10,\n        restore_best_weights=True\n    )\n]\n\n# Run Training\nEPOCHS = 50\nprint(f\"Starting training... Model will be saved to {CHECKPOINT_PATH}\")\n\nhistory = model.fit(\n    train_ds,\n    epochs=EPOCHS,\n    validation_data=val_ds,\n    callbacks=callbacks_list\n)\n\n\nDrive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(\"/content/drive\", force_remount=True).\n\nLoading Training Data...\n\nFound 39209 files belonging to 43 classes.\n\nUsing 31368 files for training.\n\nLoading Validation Data...\n\nFound 39209 files belonging to 43 classes.\n\nUsing 7841 files for validation.\n\nStarting training... Model will be saved to /content/drive/MyDrive/my_best_traffic_model.keras\n\nEpoch 1/50\n\n979/981 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - accuracy: 0.3957 - loss: 2.1406\n\nEpoch 1: val_accuracy improved from -inf to 0.96021, saving model to /content/drive/MyDrive/my_best_traffic_model.keras\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 39s 26ms/step - accuracy: 0.3965 - loss: 2.1379 - val_accuracy: 0.9602 - val_loss: 0.1453\n\nEpoch 2/50\n\n979/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9465 - loss: 0.1815\n\nEpoch 2: val_accuracy improved from 0.96021 to 0.98878, saving model to /content/drive/MyDrive/my_best_traffic_model.keras\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 13s 13ms/step - accuracy: 0.9465 - loss: 0.1814 - val_accuracy: 0.9888 - val_loss: 0.0418\n\nEpoch 3/50\n\n977/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9775 - loss: 0.0786\n\nEpoch 3: val_accuracy improved from 0.98878 to 0.99337, saving model to /content/drive/MyDrive/my_best_traffic_model.keras\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 20s 13ms/step - accuracy: 0.9775 - loss: 0.0786 - val_accuracy: 0.9934 - val_loss: 0.0253\n\nEpoch 4/50\n\n978/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9829 - loss: 0.0537\n\nEpoch 4: val_accuracy did not improve from 0.99337\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 13s 13ms/step - accuracy: 0.9829 - loss: 0.0537 - val_accuracy: 0.9925 - val_loss: 0.0306\n\nEpoch 5/50\n\n978/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9883 - loss: 0.0422\n\nEpoch 5: val_accuracy did not improve from 0.99337\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 13s 13ms/step - accuracy: 0.9883 - loss: 0.0422 - val_accuracy: 0.9929 - val_loss: 0.0252\n\nEpoch 6/50\n\n978/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9910 - loss: 0.0308\n\nEpoch 6: val_accuracy did not improve from 0.99337\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 13s 13ms/step - accuracy: 0.9910 - loss: 0.0308 - val_accuracy: 0.9932 - val_loss: 0.0232\n\nEpoch 7/50\n\n979/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9895 - loss: 0.0369\n\nEpoch 7: val_accuracy improved from 0.99337 to 0.99503, saving model to /content/drive/MyDrive/my_best_traffic_model.keras\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 13s 13ms/step - accuracy: 0.9895 - loss: 0.0369 - val_accuracy: 0.9950 - val_loss: 0.0187\n\nEpoch 8/50\n\n980/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9934 - loss: 0.0221\n\nEpoch 8: val_accuracy improved from 0.99503 to 0.99605, saving model to /content/drive/MyDrive/my_best_traffic_model.keras\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 13s 14ms/step - accuracy: 0.9934 - loss: 0.0221 - val_accuracy: 0.9960 - val_loss: 0.0164\n\nEpoch 9/50\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9922 - loss: 0.0276\n\nEpoch 9: val_accuracy improved from 0.99605 to 0.99617, saving model to /content/drive/MyDrive/my_best_traffic_model.keras\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 20s 14ms/step - accuracy: 0.9922 - loss: 0.0276 - val_accuracy: 0.9962 - val_loss: 0.0172\n\nEpoch 10/50\n\n980/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9944 - loss: 0.0206\n\nEpoch 10: val_accuracy did not improve from 0.99617\n\n981/981 ━━━━━━━━━━━━━━━━━━━━ 13s 13ms/step - accuracy: 0.9944 - loss: 0.0206 - val_accuracy: 0.9906 - val_loss: 0.0353\n\nEpoch 11/50\n\n907/981 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - accuracy: 0.9926 - loss: 0.0276\n\n\n\nOnce you have built and trained your model, the next step is to run the mini holdout images through it and see how well your model does at making predictions for images it has never seen before.\nSince loading these images and formatting them for the model can be tricky, you may find the following code useful. This code only uses your model to predict the class label for a given image. You’ll still need to compare those predictions to the “ground truth” class labels in mini_holdout_answers.csv to evaluate how well the model does.\nPreviously, you were given a file that would check your results. This time you’re given the answers to the first mini holdout dataset. You’ll need to compare those predictions against the “ground truth” class labels in mini_holdout_answers.csv to evaluate how well the model does.\nMake sure to use the insights gained from the mini hold out dataset in your executive summary.\nfrom tensorflow.keras.preprocessing import image_dataset_from_directory\ntest_dir = '/content/'\n\ntest_datagen = ImageDataGenerator(rescale=1./255)\ntest_generator = test_datagen.flow_from_directory(\n        test_dir,\n        classes=['mini_holdout'],\n        target_size=image_size,\n        class_mode='sparse',\n        shuffle=False)\nprobabilities = model.predict(test_generator)\npredictions = [np.argmax(probas) for probas in probabilities]\n##Mini Hold out Dataset\nOnce you feel confident, you will need to predict for the full holdout dataset using the following code, and submit your csv file:\nfrom tensorflow.keras.preprocessing import image_dataset_from_directory\ntest_dir = '/content/'\n\ntest_datagen = ImageDataGenerator(rescale=1./255)\ntest_generator = test_datagen.flow_from_directory(\n        test_dir,\n        classes=['holdout'],\n        target_size=image_size,\n        class_mode='sparse',\n        shuffle=False)\nprobabilities = model.predict(test_generator)\npredictions = [np.argmax(probas) for probas in probabilities]\n\n\n\n Back to top"
   },
   {
     "objectID": "notebooks/Exploration_02.html",
